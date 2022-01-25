@@ -2,6 +2,7 @@ package keycloak
 
 import (
 	"context"
+	"fmt"
 	"github.com/Nerzal/gocloak/v10"
 	"github.com/spf13/viper"
 	"log"
@@ -42,7 +43,7 @@ func (kc keycloak) aquireToken() *gocloak.JWT {
 	return token
 }
 
-func KCUserViaDiscordID(discordID string) *gocloak.User {
+func KCUserViaDiscordID(discordID string) (*gocloak.User, error) {
 	kc := new()
 
 	users, err := kc.client.GetUsers(kc.ctx, kc.aquireToken().AccessToken, kc.Realm, gocloak.GetUsersParams{
@@ -52,7 +53,12 @@ func KCUserViaDiscordID(discordID string) *gocloak.User {
 
 	if err != nil {
 		log.Fatalf("error finding users: %v", err)
+		return nil, err
 	}
 
-	return users[0]
+	if len(users) == 0 {
+		return nil, fmt.Errorf("no users found")
+	}
+
+	return users[0], err
 }

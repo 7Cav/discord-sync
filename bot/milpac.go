@@ -1,4 +1,4 @@
-package milpac
+package bot
 
 import (
 	"github.com/7cav/discord-sync/cavAPI"
@@ -7,11 +7,11 @@ import (
 	"log"
 )
 
-var CommandName = "milpac"
+var MilpacCommandName = "milpac"
 
-func Command() *discordgo.ApplicationCommand {
+func MilpacCommand() *discordgo.ApplicationCommand {
 	return &discordgo.ApplicationCommand{
-		Name:        CommandName,
+		Name:        MilpacCommandName,
 		Description: "Fetch basic MILPACs data for a given user",
 		//Options: []*discordgo.ApplicationCommandOption{
 		//	{
@@ -24,17 +24,23 @@ func Command() *discordgo.ApplicationCommand {
 	}
 }
 
-func Handle(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func HandleMilpac(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	log.Println("Running milpac cmd")
 
 	log.Println("something else")
 
 	log.Printf("attempt get kc user for %s\n", i.Member.User.ID)
 
-	kcUser := keycloak.KCUserViaDiscordID(i.Member.User.ID)
+	kcUser, err := keycloak.KCUserViaDiscordID(i.Member.User.ID)
+
+	if err != nil {
+		AskToConnectDiscord(s, i)
+		return
+	}
+
 	cavUser := cavAPI.GetUserViaKCID(kcUser.ID)
 
-	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+	err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Content: "Some milpac",

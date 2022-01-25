@@ -1,8 +1,7 @@
 package bot
 
 import (
-	"github.com/7cav/discord-sync/bot/hello"
-	"github.com/7cav/discord-sync/bot/milpac"
+	"fmt"
 	"github.com/bwmarrin/discordgo"
 	"log"
 	"os"
@@ -38,13 +37,13 @@ func (b Bot) Start(appId string, guildId string) {
 	}
 
 	commands := []*discordgo.ApplicationCommand{
-		milpac.Command(),
-		hello.Command(),
+		MilpacCommand(),
+		HelloCommand(),
 	}
 
 	handlers := map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate){
-		milpac.CommandName: milpac.Handle,
-		hello.CommandName:  hello.Handle,
+		MilpacCommandName: HandleMilpac,
+		HelloCommandName:  HandleHello,
 	}
 
 	_, err = conn.ApplicationCommandBulkOverwrite(appId, guildId, commands)
@@ -64,4 +63,23 @@ func (b Bot) Start(appId string, guildId string) {
 	signal.Notify(stop, os.Interrupt)
 	<-stop
 	log.Println("Gracefully shutting down")
+}
+
+func AskToConnectDiscord(s *discordgo.Session, i *discordgo.InteractionCreate) {
+
+	mention := fmt.Sprintf("<@%s>", i.Member.User.ID)
+	kcUrl := "https://auth.7cav.us/auth/realms/7Cav/account/identity"
+	reply := fmt.Sprintf(`Hey %s, we don't have a valid discord connection for you. Please go to %s and click 'add' to connect your discord account. Then try again!`, mention, kcUrl)
+
+	// this was called because no KC user was found for the given discord ID
+	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Content: reply,
+		},
+	})
+
+	if err != nil {
+		return
+	}
 }

@@ -1,20 +1,20 @@
-package hello
+package bot
 
 import (
 	"github.com/bwmarrin/discordgo"
 	"log"
 )
 
-var CommandName = "hello"
+var HelloCommandName = "hello"
 
-func Command() *discordgo.ApplicationCommand {
+func HelloCommand() *discordgo.ApplicationCommand {
 	return &discordgo.ApplicationCommand{
-		Name:        CommandName,
+		Name:        HelloCommandName,
 		Description: "hello world",
 	}
 }
 
-func Handle(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func HandleHello(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	log.Println("Running hello cmd")
 
 	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
