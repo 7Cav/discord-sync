@@ -16,9 +16,9 @@ var runCmd = &cobra.Command{
 	Use:   "run",
 	Short: "Start discord bot",
 	Run: func(cmd *cobra.Command, args []string) {
-		appId := viper.GetString("app-id")
-		guildId := viper.GetString("guild-id")
-		token := viper.GetString("token")
+		appId := viper.GetString("discord.app-id")
+		guildId := viper.GetString("discord.guild-id")
+		token := viper.GetString("discord.token")
 
 		if appId == "" || guildId == "" || token == "" {
 			log.Fatalf("check config, something is empty")

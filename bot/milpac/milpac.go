@@ -1,6 +1,7 @@
 package milpac
 
 import (
+	"github.com/7cav/discord-sync/keycloak"
 	"github.com/bwmarrin/discordgo"
 	"log"
 )
@@ -25,6 +26,12 @@ func Command() *discordgo.ApplicationCommand {
 func Handle(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	log.Println("Running milpac cmd")
 
+	log.Println("something else")
+
+	log.Printf("attempt get kc user for %s\n", i.Member.User.ID)
+
+	keycloak.KCUserViaDiscordID(i.User.ID)
+
 	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
@@ -38,6 +45,7 @@ func Handle(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			},
 		},
 	})
+
 	if err != nil {
 		return
 	}
