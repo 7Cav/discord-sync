@@ -30,7 +30,7 @@ func Handle(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	log.Printf("attempt get kc user for %s\n", i.Member.User.ID)
 
-	keycloak.KCUserViaDiscordID(i.User.ID)
+	keycloak.KCUserViaDiscordID(i.Member.User.ID)
 
 	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
