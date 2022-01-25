@@ -1,3 +1,9 @@
-app-id:
-guild-id:
-token:
+discord:
+  app-id: 
+  guild-id:
+  token:
+keycloak:
+  host:
+  client-id:
+  client-secret:
+  realm:
