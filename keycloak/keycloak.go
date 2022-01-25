@@ -42,7 +42,7 @@ func (kc keycloak) aquireToken() *gocloak.JWT {
 	return token
 }
 
-func KCUserViaDiscordID(discordID string) {
+func KCUserViaDiscordID(discordID string) *gocloak.User {
 	kc := new()
 
 	users, err := kc.client.GetUsers(kc.ctx, kc.aquireToken().AccessToken, kc.Realm, gocloak.GetUsersParams{
@@ -54,5 +54,5 @@ func KCUserViaDiscordID(discordID string) {
 		log.Fatalf("error finding users: %v", err)
 	}
 
-	log.Println(users)
+	return users[0]
 }

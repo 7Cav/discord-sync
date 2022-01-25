@@ -7,3 +7,5 @@ keycloak:
   client-id:
   client-secret:
   realm:
+cav:
+  api-token:

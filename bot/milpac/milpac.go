@@ -1,6 +1,7 @@
 package milpac
 
 import (
+	"github.com/7cav/discord-sync/cavAPI"
 	"github.com/7cav/discord-sync/keycloak"
 	"github.com/bwmarrin/discordgo"
 	"log"
@@ -30,7 +31,8 @@ func Handle(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	log.Printf("attempt get kc user for %s\n", i.Member.User.ID)
 
-	keycloak.KCUserViaDiscordID(i.Member.User.ID)
+	kcUser := keycloak.KCUserViaDiscordID(i.Member.User.ID)
+	cavUser := cavAPI.GetUserViaKCID(kcUser.ID)
 
 	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
@@ -39,7 +41,7 @@ func Handle(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			Embeds: []*discordgo.MessageEmbed{
 				{
 					Image: &discordgo.MessageEmbedImage{
-						URL: "https://7cav.us/data/roster_uniforms/0/1.jpg?1638502104",
+						URL: cavUser.UniformUrl,
 					},
 				},
 			},
