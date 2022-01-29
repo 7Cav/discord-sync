@@ -3,11 +3,13 @@ package cavDiscord
 import (
 	"fmt"
 	"github.com/7cav/api/proto"
+	"log"
 )
 
 type DiscordRankRoleId string
 
 const (
+	discord7CavRCT DiscordRankRoleId = "899328824871882752"
 	discord7CavPVT DiscordRankRoleId = "899328617081864202"
 	discord7CavPFC DiscordRankRoleId = "899328498013966417"
 	discord7CavSPC DiscordRankRoleId = "899328418766815283"
@@ -38,6 +40,7 @@ const (
 )
 
 var RankRoleMapping = map[proto.RankType]DiscordRankRoleId{
+	proto.RankType_RANK_TYPE_RCT: discord7CavRCT,
 	proto.RankType_RANK_TYPE_PVT: discord7CavPVT,
 	proto.RankType_RANK_TYPE_PFC: discord7CavPFC,
 	proto.RankType_RANK_TYPE_SPC: discord7CavSPC,
@@ -68,6 +71,7 @@ var RankRoleMapping = map[proto.RankType]DiscordRankRoleId{
 }
 
 var RoleRankMapping = map[DiscordRankRoleId]proto.RankType{
+	discord7CavRCT: proto.RankType_RANK_TYPE_RCT,
 	discord7CavPVT: proto.RankType_RANK_TYPE_PVT,
 	discord7CavPFC: proto.RankType_RANK_TYPE_PFC,
 	discord7CavSPC: proto.RankType_RANK_TYPE_SPC,
@@ -132,6 +136,57 @@ var RosterRoleMapping = map[proto.RosterType]DiscordRosterRole{
 // really, this just confirms the role string is the retired role
 func SpecialRETRoleCheck(role string) bool {
 	return DiscordRosterRole(role) == discord7CavRet
+}
+
+type DiscordRankGroupRole string
+
+const (
+	discord7CavOfficer DiscordRankGroupRole = "437750376415100928"
+	discord7CavNCO     DiscordRankGroupRole = "437750614374613012"
+)
+
+var DiscordRankGroupMap = map[DiscordRankGroupRole]DiscordRankGroupRole{
+	discord7CavOfficer: discord7CavOfficer,
+	discord7CavNCO:     discord7CavNCO,
+}
+
+func GetDiscordRankGroupRole(rank proto.RankType) DiscordRankGroupRole {
+	log.Printf("Getting discord rank group role for rank: %s", rank)
+	switch rank {
+	case proto.RankType_RANK_TYPE_GOA,
+		proto.RankType_RANK_TYPE_GEN,
+		proto.RankType_RANK_TYPE_LTG,
+		proto.RankType_RANK_TYPE_MG,
+		proto.RankType_RANK_TYPE_BG,
+		proto.RankType_RANK_TYPE_COL,
+		proto.RankType_RANK_TYPE_LTC,
+		proto.RankType_RANK_TYPE_MAJ,
+		proto.RankType_RANK_TYPE_CPT,
+		proto.RankType_RANK_TYPE_1LT,
+		proto.RankType_RANK_TYPE_2LT:
+		log.Println("returning officer rank group")
+		return discord7CavOfficer
+	case proto.RankType_RANK_TYPE_CW5,
+		proto.RankType_RANK_TYPE_CW4,
+		proto.RankType_RANK_TYPE_CW3,
+		proto.RankType_RANK_TYPE_CW2,
+		proto.RankType_RANK_TYPE_WO1,
+		proto.RankType_RANK_TYPE_CSM,
+		proto.RankType_RANK_TYPE_SGM,
+		proto.RankType_RANK_TYPE_1SG,
+		proto.RankType_RANK_TYPE_MSG,
+		proto.RankType_RANK_TYPE_SFC,
+		proto.RankType_RANK_TYPE_SSG,
+		proto.RankType_RANK_TYPE_SGT,
+		proto.RankType_RANK_TYPE_CPL:
+		log.Println("returning NCO rank group")
+		return discord7CavNCO
+	default:
+		log.Println("returning no rank group")
+		return ""
+	}
+
+	return ""
 }
 
 func GenerateCavNickName(cavUser *proto.Profile) string {

@@ -126,7 +126,8 @@ func syncRosterOnCoreDiscord(session *discordgo.Session, user *discordgo.Member,
 func syncRankOnCoreDiscord(session *discordgo.Session, user *discordgo.Member, cavUser *proto.Profile) error {
 
 	skipRoleChange := false
-	skipNickChange := false
+	skipNickChange := true
+	skipRankGroupRoleChange := false
 
 	// Sync correct rank
 	rankRoleId := cavDiscord.RankRoleMapping[proto.RankType(cavUser.Rank.RankId)]
@@ -138,18 +139,46 @@ func syncRankOnCoreDiscord(session *discordgo.Session, user *discordgo.Member, c
 
 	var currentRank proto.RankType
 	var currentRankRole string
+	var currentRankGroupRole string
 	for _, role := range user.Roles {
+
+		if value, found := cavDiscord.DiscordRankGroupMap[cavDiscord.DiscordRankGroupRole(role)]; found {
+			log.Printf("user: %s, found matching rankGroup role: %s, type: %s", user.Nick, role, value)
+			currentRankGroupRole = string(value)
+		}
+
 		if value, found := cavDiscord.RoleRankMapping[cavDiscord.DiscordRankRoleId(role)]; found {
 			log.Printf("user: %s, found matching rank role: %s, rank: %s\n", user.Nick, role, value.String())
 			currentRankRole = role
 			currentRank = value
-			break
 		}
 	}
 
 	if currentRank == proto.RankType(cavUser.Rank.RankId) {
 		log.Println("User rank already sync'd - skipping rank sync")
 		skipRoleChange = true
+	}
+
+	correctGroupRole := cavDiscord.GetDiscordRankGroupRole(currentRank)
+	if correctGroupRole == cavDiscord.DiscordRankGroupRole(currentRankGroupRole) {
+		skipRankGroupRoleChange = true
+	}
+
+	if !skipRankGroupRoleChange {
+		log.Printf("Updating rank group role: %s", correctGroupRole)
+		if currentRankGroupRole != "" {
+			err := session.GuildMemberRoleRemove(guildId, user.User.ID, currentRankGroupRole)
+			if err != nil {
+				log.Fatalf("error removing role, user: %s, group rank role: %s, on guild: %s,  %v", user.User.ID, currentRankGroupRole, guildId, err)
+				return err
+			}
+		}
+
+		err := session.GuildMemberRoleAdd(guildId, user.User.ID, string(correctGroupRole))
+		if err != nil {
+			log.Fatalf("error adding role, user: %s, rank group role: %s, on guild: %s,  %v", user.User.ID, string(correctGroupRole), guildId, err)
+			return err
+		}
 	}
 
 	if !skipRoleChange {
