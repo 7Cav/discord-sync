@@ -104,39 +104,41 @@ var RoleRankMapping = map[DiscordRankRoleId]proto.RankType{
 type DiscordRosterRole string
 
 const (
-	discord7CavActive    DiscordRosterRole = "437748324960043009"
-	discord7CavReserve   DiscordRosterRole = "690899750425329666"
-	discord7CavELOA      DiscordRosterRole = "937082349848526848"
-	discord7CavRet       DiscordRosterRole = "437748982400417792"
-	discord7CavDisch     DiscordRosterRole = "437749895785480193"
-	discord7CavWOH       DiscordRosterRole = "690899500457525308"
-	discord7CavArlington DiscordRosterRole = "937084272068661289"
+	Discord7CavActive    DiscordRosterRole = "437748324960043009"
+	Discord7CavReserve   DiscordRosterRole = "690899750425329666"
+	Discord7CavELOA      DiscordRosterRole = "937082349848526848"
+	Discord7CavRet       DiscordRosterRole = "437748982400417792"
+	Discord7CavDisch     DiscordRosterRole = "437749895785480193"
+	Discord7CavWOH       DiscordRosterRole = "690899500457525308"
+	Discord7CavArlington DiscordRosterRole = "937084272068661289"
 )
 
 var RoleRosterMapping = map[DiscordRosterRole]proto.RosterType{
-	discord7CavActive:  proto.RosterType_ROSTER_TYPE_COMBAT,
-	discord7CavReserve: proto.RosterType_ROSTER_TYPE_RESERVE,
-	discord7CavELOA:    proto.RosterType_ROSTER_TYPE_ELOA,
-	discord7CavWOH:     proto.RosterType_ROSTER_TYPE_WALL_OF_HONOR,
-	discord7CavRet:     proto.RosterType_ROSTER_TYPE_PAST_MEMBERS,
-	discord7CavDisch:   proto.RosterType_ROSTER_TYPE_PAST_MEMBERS,
+	Discord7CavActive:  proto.RosterType_ROSTER_TYPE_COMBAT,
+	Discord7CavReserve: proto.RosterType_ROSTER_TYPE_RESERVE,
+	Discord7CavELOA:    proto.RosterType_ROSTER_TYPE_ELOA,
+	Discord7CavWOH:     proto.RosterType_ROSTER_TYPE_WALL_OF_HONOR,
+	Discord7CavRet:     proto.RosterType_ROSTER_TYPE_PAST_MEMBERS,
+	Discord7CavDisch:   proto.RosterType_ROSTER_TYPE_PAST_MEMBERS,
 }
 
 var RosterRoleMapping = map[proto.RosterType]DiscordRosterRole{
-	proto.RosterType_ROSTER_TYPE_COMBAT:        discord7CavActive,
-	proto.RosterType_ROSTER_TYPE_RESERVE:       discord7CavReserve,
-	proto.RosterType_ROSTER_TYPE_ELOA:          discord7CavELOA,
-	proto.RosterType_ROSTER_TYPE_WALL_OF_HONOR: discord7CavWOH,
-	proto.RosterType_ROSTER_TYPE_ARLINGTON:     discord7CavArlington,
-	proto.RosterType_ROSTER_TYPE_PAST_MEMBERS:  discord7CavDisch,
+	proto.RosterType_ROSTER_TYPE_COMBAT:        Discord7CavActive,
+	proto.RosterType_ROSTER_TYPE_RESERVE:       Discord7CavReserve,
+	proto.RosterType_ROSTER_TYPE_ELOA:          Discord7CavELOA,
+	proto.RosterType_ROSTER_TYPE_WALL_OF_HONOR: Discord7CavWOH,
+	proto.RosterType_ROSTER_TYPE_ARLINGTON:     Discord7CavArlington,
+	proto.RosterType_ROSTER_TYPE_PAST_MEMBERS:  Discord7CavDisch,
 	//proto.RosterType_ROSTER_TYPE_PAST_MEMBERS: discord7CavRet,
 }
 
 // SpecialRETRoleCheck special function because `proto.RosterType_ROSTER_TYPE_PAST_MEMBERS` maps to both DISCH and RET
 // really, this just confirms the role string is the retired role
 func SpecialRETRoleCheck(role string) bool {
-	return DiscordRosterRole(role) == discord7CavRet
+	return DiscordRosterRole(role) == Discord7CavRet
 }
+
+const RETIRED_POSITION_TITLE = "Retired"
 
 type DiscordRankGroupRole string
 
@@ -188,10 +190,27 @@ func GetDiscordRankGroupRole(rank proto.RankType) DiscordRankGroupRole {
 }
 
 func GenerateCavNickName(cavUser *proto.Profile) string {
-	// lol
-	if cavUser.User.Username == "Jarvis.A" {
-		return fmt.Sprintf("%s.Jarvis", cavUser.Rank.RankShort)
+	prefix := ""
+	switch cavUser.Roster {
+	case proto.RosterType_ROSTER_TYPE_ELOA:
+		prefix = "[ELOA] "
+		break
+	case proto.RosterType_ROSTER_TYPE_RESERVE:
+		prefix = "[AR] "
+		break
+	case proto.RosterType_ROSTER_TYPE_PAST_MEMBERS:
+		if cavUser.Primary.PositionTitle == RETIRED_POSITION_TITLE {
+			prefix = "[RET] "
+			break
+		}
+		prefix = "[DISCH] "
+		break
 	}
 
-	return fmt.Sprintf("%s.%s", cavUser.Rank.RankShort, cavUser.User.Username)
+	// lol
+	if cavUser.User.Username == "Jarvis.A" {
+		return fmt.Sprintf("%s%s.Jarvis", prefix, cavUser.Rank.RankShort)
+	}
+
+	return fmt.Sprintf("%s%s.%s", prefix, cavUser.Rank.RankShort, cavUser.User.Username)
 }
