@@ -55,8 +55,8 @@ func (b Bot) Start(appId string, guildId string) {
 	}
 
 	conn.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-		if h, ok := handlers[i.ApplicationCommandData().Name]; ok {
-			h(s, i)
+		if handler, found := handlers[i.ApplicationCommandData().Name]; found {
+			handler(s, i)
 		}
 	})
 

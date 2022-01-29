@@ -132,11 +132,13 @@ func syncRankOnCoreDiscord(session *discordgo.Session, user *discordgo.Member, c
 	var currentRankGroupRole string
 	for _, role := range user.Roles {
 
+		// are they in Officer or NCO groups already
 		if value, found := cavDiscord.DiscordRankGroupMap[cavDiscord.DiscordRankGroupRole(role)]; found {
 			log.Printf("user: %s, found matching rankGroup role: %s, type: %s", user.Nick, role, value)
 			currentRankGroupRole = string(value)
 		}
 
+		// are they in a rank specific group 'SPC' 'CPL' etc
 		if value, found := cavDiscord.RoleRankMapping[cavDiscord.DiscordRankRoleId(role)]; found {
 			log.Printf("user: %s, found matching rank role: %s, rank: %s\n", user.Nick, role, value.String())
 			currentRankRole = role
