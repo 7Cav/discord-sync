@@ -11,16 +11,6 @@ import (
 	"log"
 )
 
-type CavDiscordServer struct {
-	serverId    string
-	roleMapping map[string]roleMapping
-}
-
-type roleMapping struct {
-	discordRoleId    string
-	milpacPositionId uint64
-}
-
 var SyncCommandName = "sync"
 
 func SyncCommand() *discordgo.ApplicationCommand {
