@@ -1,6 +1,9 @@
-package cav7
+package cavDiscord
 
-import "github.com/7cav/api/proto"
+import (
+	"fmt"
+	"github.com/7cav/api/proto"
+)
 
 type DiscordRankRoleId string
 
@@ -92,4 +95,50 @@ var RoleRankMapping = map[DiscordRankRoleId]proto.RankType{
 	discord7CavLTG: proto.RankType_RANK_TYPE_LTG,
 	discord7CavGEN: proto.RankType_RANK_TYPE_GEN,
 	discord7CavGOA: proto.RankType_RANK_TYPE_GOA,
+}
+
+type DiscordRosterRole string
+
+const (
+	discord7CavActive    DiscordRosterRole = "437748324960043009"
+	discord7CavReserve   DiscordRosterRole = "690899750425329666"
+	discord7CavELOA      DiscordRosterRole = "937082349848526848"
+	discord7CavRet       DiscordRosterRole = "437748982400417792"
+	discord7CavDisch     DiscordRosterRole = "437749895785480193"
+	discord7CavWOH       DiscordRosterRole = "690899500457525308"
+	discord7CavArlington DiscordRosterRole = "937084272068661289"
+)
+
+var RoleRosterMapping = map[DiscordRosterRole]proto.RosterType{
+	discord7CavActive:  proto.RosterType_ROSTER_TYPE_COMBAT,
+	discord7CavReserve: proto.RosterType_ROSTER_TYPE_RESERVE,
+	discord7CavELOA:    proto.RosterType_ROSTER_TYPE_ELOA,
+	discord7CavWOH:     proto.RosterType_ROSTER_TYPE_WALL_OF_HONOR,
+	discord7CavRet:     proto.RosterType_ROSTER_TYPE_PAST_MEMBERS,
+	discord7CavDisch:   proto.RosterType_ROSTER_TYPE_PAST_MEMBERS,
+}
+
+var RosterRoleMapping = map[proto.RosterType]DiscordRosterRole{
+	proto.RosterType_ROSTER_TYPE_COMBAT:        discord7CavActive,
+	proto.RosterType_ROSTER_TYPE_RESERVE:       discord7CavReserve,
+	proto.RosterType_ROSTER_TYPE_ELOA:          discord7CavELOA,
+	proto.RosterType_ROSTER_TYPE_WALL_OF_HONOR: discord7CavWOH,
+	proto.RosterType_ROSTER_TYPE_ARLINGTON:     discord7CavArlington,
+	proto.RosterType_ROSTER_TYPE_PAST_MEMBERS:  discord7CavDisch,
+	//proto.RosterType_ROSTER_TYPE_PAST_MEMBERS: discord7CavRet,
+}
+
+// SpecialRETRoleCheck special function because `proto.RosterType_ROSTER_TYPE_PAST_MEMBERS` maps to both DISCH and RET
+// really, this just confirms the role string is the retired role
+func SpecialRETRoleCheck(role string) bool {
+	return DiscordRosterRole(role) == discord7CavRet
+}
+
+func GenerateCavNickName(cavUser *proto.Profile) string {
+	// lol
+	if cavUser.User.Username == "Jarvis.A" {
+		return fmt.Sprintf("%s.Jarvis", cavUser.Rank.RankShort)
+	}
+
+	return fmt.Sprintf("%s.%s", cavUser.Rank.RankShort, cavUser.User.Username)
 }

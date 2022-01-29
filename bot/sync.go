@@ -3,8 +3,8 @@ package bot
 import (
 	"fmt"
 	"github.com/7cav/api/proto"
-	"github.com/7cav/discord-sync/cav7"
 	"github.com/7cav/discord-sync/cavAPI"
+	"github.com/7cav/discord-sync/cavDiscord"
 	"github.com/7cav/discord-sync/keycloak"
 	"github.com/bwmarrin/discordgo"
 	"github.com/spf13/viper"
@@ -20,8 +20,6 @@ type roleMapping struct {
 	discordRoleId    string
 	milpacPositionId uint64
 }
-
-const discord7CavActive = "437748324960043009"
 
 var SyncCommandName = "sync"
 
@@ -47,7 +45,12 @@ func HandleSync(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	cavUser := cavAPI.GetUserViaKCID(kcUser.ID)
 
 	err = syncRankOnCoreDiscord(s, i.Member, cavUser)
+	if err != nil {
+		ErrorWithCommand(s, i)
+		return
+	}
 
+	err = syncRosterOnCoreDiscord(s, i.Member, cavUser)
 	if err != nil {
 		ErrorWithCommand(s, i)
 		return
@@ -65,17 +68,68 @@ func HandleSync(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 }
 
+/////////////////////////////////////////////////////////////////
+///////////////////// Sync logic steps below ////////////////////
+/////////////////////////////////////////////////////////////////
+
 func syncRosterOnCoreDiscord(session *discordgo.Session, user *discordgo.Member, cavUser *proto.Profile) error {
 
+	var correctRosterRole cavDiscord.DiscordRosterRole
+
+	if rosterRole, found := cavDiscord.RosterRoleMapping[cavUser.Roster]; !found {
+		return fmt.Errorf("no matching discord role for roster %s", cavUser.Roster)
+	} else {
+		correctRosterRole = rosterRole
+	}
+
+	guildId := viper.GetString("discord.guild-id")
+
+	var currentRoster proto.RosterType
+	var currentRosterRole string
+	for _, role := range user.Roles {
+		if value, found := cavDiscord.RoleRosterMapping[cavDiscord.DiscordRosterRole(role)]; found || cavDiscord.SpecialRETRoleCheck(role) {
+			currentRosterRole = role
+
+			// special case for retired members
+			if !found {
+				currentRoster = proto.RosterType_ROSTER_TYPE_PAST_MEMBERS
+				break
+			}
+
+			currentRoster = value
+			break
+		}
+	}
+
+	if currentRoster == cavUser.Roster {
+		log.Println("User roster already sync'd - skipping roster sync")
+		return nil
+	}
+
+	if currentRosterRole != "" {
+		err := session.GuildMemberRoleRemove(guildId, user.User.ID, currentRosterRole)
+		if err != nil {
+			log.Fatalf("error removing role, user: %s, roster role: %s, on guild: %s,  %v", user.User.ID, currentRosterRole, guildId, err)
+			return err
+		}
+	}
+
+	err := session.GuildMemberRoleAdd(guildId, user.User.ID, string(correctRosterRole))
+	if err != nil {
+		log.Fatalf("error adding role, user: %s, roster role: %s, on guild: %s,  %v", user.User.ID, string(correctRosterRole), guildId, err)
+		return err
+	}
+
+	return nil
 }
 
 func syncRankOnCoreDiscord(session *discordgo.Session, user *discordgo.Member, cavUser *proto.Profile) error {
 
 	skipRoleChange := false
-	skipNickchange := false
+	skipNickChange := false
 
 	// Sync correct rank
-	rankRoleId := cav7.RankRoleMapping[proto.RankType(cavUser.Rank.RankId)]
+	rankRoleId := cavDiscord.RankRoleMapping[proto.RankType(cavUser.Rank.RankId)]
 
 	if rankRoleId == "" {
 		return fmt.Errorf("no matching discord role for rank %s", cavUser.Rank.RankShort)
@@ -85,7 +139,7 @@ func syncRankOnCoreDiscord(session *discordgo.Session, user *discordgo.Member, c
 	var currentRank proto.RankType
 	var currentRankRole string
 	for _, role := range user.Roles {
-		if value, ok := cav7.RoleRankMapping[cav7.DiscordRankRoleId(role)]; ok {
+		if value, found := cavDiscord.RoleRankMapping[cavDiscord.DiscordRankRoleId(role)]; found {
 			log.Printf("user: %s, found matching rank role: %s, rank: %s\n", user.Nick, role, value.String())
 			currentRankRole = role
 			currentRank = value
@@ -115,13 +169,13 @@ func syncRankOnCoreDiscord(session *discordgo.Session, user *discordgo.Member, c
 		}
 	}
 
-	newNick := generateCavNickName(cavUser)
+	newNick := cavDiscord.GenerateCavNickName(cavUser)
 	if newNick == user.Nick {
 		log.Println("User nick already sync'd - skipping nick sync")
-		skipNickchange = true
+		skipNickChange = true
 	}
 
-	if !skipNickchange {
+	if !skipNickChange {
 		err := session.GuildMemberNickname(guildId, user.User.ID, newNick)
 		if err != nil {
 			log.Fatalf("error updating user nick, user: %s, nick: %s, on guild: %s,  %v", user.User.ID, newNick, guildId, err)
@@ -130,15 +184,6 @@ func syncRankOnCoreDiscord(session *discordgo.Session, user *discordgo.Member, c
 	}
 
 	return nil
-}
-
-func generateCavNickName(cavUser *proto.Profile) string {
-	// lol
-	if cavUser.User.Username == "Jarvis.A" {
-		return fmt.Sprintf("%s.Jarvis", cavUser.Rank.RankShort)
-	}
-
-	return fmt.Sprintf("%s.%s", cavUser.Rank.RankShort, cavUser.User.Username)
 }
 
 func ErrorWithCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
