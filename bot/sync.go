@@ -126,7 +126,7 @@ func syncRosterOnCoreDiscord(session *discordgo.Session, user *discordgo.Member,
 func syncRankOnCoreDiscord(session *discordgo.Session, user *discordgo.Member, cavUser *proto.Profile) error {
 
 	skipRoleChange := false
-	skipNickChange := true
+	skipNickChange := false
 	skipRankGroupRoleChange := false
 
 	// Sync correct rank
