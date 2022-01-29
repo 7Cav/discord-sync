@@ -109,14 +109,14 @@ func syncRosterOnCoreDiscord(session *discordgo.Session, user *discordgo.Member,
 	if currentRosterRole != "" {
 		err := session.GuildMemberRoleRemove(guildId, user.User.ID, currentRosterRole)
 		if err != nil {
-			log.Fatalf("error removing role, user: %s, roster role: %s, on guild: %s,  %v", user.User.ID, currentRosterRole, guildId, err)
+			log.Printf("error removing role, user: %s, roster role: %s, on guild: %s,  %v", user.User.ID, currentRosterRole, guildId, err)
 			return err
 		}
 	}
 
 	err := session.GuildMemberRoleAdd(guildId, user.User.ID, string(correctRosterRole))
 	if err != nil {
-		log.Fatalf("error adding role, user: %s, roster role: %s, on guild: %s,  %v", user.User.ID, string(correctRosterRole), guildId, err)
+		log.Printf("error adding role, user: %s, roster role: %s, on guild: %s,  %v", user.User.ID, string(correctRosterRole), guildId, err)
 		return err
 	}
 
@@ -169,14 +169,14 @@ func syncRankOnCoreDiscord(session *discordgo.Session, user *discordgo.Member, c
 		if currentRankGroupRole != "" {
 			err := session.GuildMemberRoleRemove(guildId, user.User.ID, currentRankGroupRole)
 			if err != nil {
-				log.Fatalf("error removing role, user: %s, group rank role: %s, on guild: %s,  %v", user.User.Username, currentRankGroupRole, guildId, err)
+				log.Printf("error removing role, user: %s, group rank role: %s, on guild: %s,  %v", user.User.Username, currentRankGroupRole, guildId, err)
 				return err
 			}
 		}
 
 		err := session.GuildMemberRoleAdd(guildId, user.User.ID, string(correctGroupRole))
 		if err != nil {
-			log.Fatalf("error adding role, user: %s, rank group role: %s, on guild: %s,  %v", user.User.Username, string(correctGroupRole), guildId, err)
+			log.Printf("error adding role, user: %s, rank group role: %s, on guild: %s,  %v", user.User.Username, string(correctGroupRole), guildId, err)
 			return err
 		}
 	}
@@ -186,14 +186,14 @@ func syncRankOnCoreDiscord(session *discordgo.Session, user *discordgo.Member, c
 		if currentRankRole != "" {
 			err := session.GuildMemberRoleRemove(guildId, user.User.ID, currentRankRole)
 			if err != nil {
-				log.Fatalf("error removing role, user: %s, rank role: %s, on guild: %s,  %v", user.User.ID, currentRankRole, guildId, err)
+				log.Printf("error removing role, user: %s, rank role: %s, on guild: %s,  %v", user.User.ID, currentRankRole, guildId, err)
 				return err
 			}
 		}
 
 		err := session.GuildMemberRoleAdd(guildId, user.User.ID, string(rankRoleId))
 		if err != nil {
-			log.Fatalf("error adding role, user: %s, rank role: %s, on guild: %s,  %v", user.User.Username, string(rankRoleId), guildId, err)
+			log.Printf("error adding role, user: %s, rank role: %s, on guild: %s,  %v", user.User.Username, string(rankRoleId), guildId, err)
 			return err
 		}
 	}
@@ -207,7 +207,7 @@ func syncRankOnCoreDiscord(session *discordgo.Session, user *discordgo.Member, c
 	if !skipNickChange {
 		err := session.GuildMemberNickname(guildId, user.User.ID, newNick)
 		if err != nil {
-			log.Fatalf("error updating user nick, user: %s, nick: %s, on guild: %s,  %v", user.User.Username, newNick, guildId, err)
+			log.Printf("error updating user nick, user: %s, nick: %s, on guild: %s,  %v", user.User.Username, newNick, guildId, err)
 			return err
 		}
 	}

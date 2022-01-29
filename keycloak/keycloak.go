@@ -52,7 +52,7 @@ func KCUserViaDiscordID(discordID string) (*gocloak.User, error) {
 	})
 
 	if err != nil {
-		log.Fatalf("error finding users: %v", err)
+		log.Printf("error finding users: %v", err)
 		return nil, err
 	}
 
