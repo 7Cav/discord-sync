@@ -17,7 +17,7 @@ type keycloak struct {
 	ctx          context.Context
 }
 
-func new() *keycloak {
+func newKc() *keycloak {
 
 	keycloakHost := viper.GetString("keycloak.host")
 	clientId := viper.GetString("keycloak.client-id")
@@ -34,7 +34,7 @@ func new() *keycloak {
 	}
 }
 
-func (kc keycloak) aquireToken() *gocloak.JWT {
+func (kc keycloak) acquireToken() *gocloak.JWT {
 	token, err := kc.client.LoginClient(kc.ctx, kc.clientId, kc.clientSecret, kc.Realm)
 	if err != nil {
 		log.Fatalf("Something wrong with login: %v", err)
@@ -44,9 +44,9 @@ func (kc keycloak) aquireToken() *gocloak.JWT {
 }
 
 func KCUserViaDiscordID(discordID string) (*gocloak.User, error) {
-	kc := new()
+	kc := newKc()
 
-	users, err := kc.client.GetUsers(kc.ctx, kc.aquireToken().AccessToken, kc.Realm, gocloak.GetUsersParams{
+	users, err := kc.client.GetUsers(kc.ctx, kc.acquireToken().AccessToken, kc.Realm, gocloak.GetUsersParams{
 		IDPUserID: gocloak.StringP(discordID),
 		IDPAlias:  gocloak.StringP("discord"),
 	})
