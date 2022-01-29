@@ -2,6 +2,7 @@ package bot
 
 import (
 	"fmt"
+	"github.com/7cav/discord-sync/cavDiscord"
 	"github.com/bwmarrin/discordgo"
 	"github.com/spf13/viper"
 	"log"
@@ -22,6 +23,47 @@ func New(token string) (Bot, error) {
 	return Bot{
 		conn: conn,
 	}, nil
+}
+
+func (b Bot) SpecialClearOldUsers(guildId string) {
+	conn := b.conn
+
+	conn.AddHandler(func(s *discordgo.Session, r *discordgo.Ready) {
+		log.Println("Bot is up!")
+	})
+
+	err := conn.Open()
+	if err != nil {
+		log.Fatalf("Cannot open the session: %v", err)
+	}
+
+	members, err := conn.GuildMembers(guildId, "", 0)
+	if err != nil {
+		log.Printf("error getting all guild members: %v", err)
+		return
+	}
+
+	removeRole := func(member *discordgo.Member, roleToRemove string) {
+		for _, role := range member.Roles {
+			if role == roleToRemove {
+				break
+			}
+			return
+		}
+		err := conn.GuildMemberRoleRemove(guildId, member.User.ID, roleToRemove)
+		if err != nil {
+			log.Printf("error removing role: %v, from user: %s, err: %v", roleToRemove, member.Nick, err)
+			return
+		}
+		return
+	}
+
+	for _, member := range members {
+		removeRole(member, string(cavDiscord.Discord7CavActive))
+		removeRole(member, string(cavDiscord.Discord7CavDisch))
+		removeRole(member, string(cavDiscord.Discord7CavRet))
+		removeRole(member, string(cavDiscord.Discord7CavELOA))
+	}
 }
 
 func (b Bot) Start(appId string, guildId string) {
