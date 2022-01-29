@@ -3,6 +3,7 @@ package bot
 import (
 	"fmt"
 	"github.com/bwmarrin/discordgo"
+	"github.com/spf13/viper"
 	"log"
 	"os"
 	"os/signal"
@@ -39,11 +40,13 @@ func (b Bot) Start(appId string, guildId string) {
 	commands := []*discordgo.ApplicationCommand{
 		MilpacCommand(),
 		HelloCommand(),
+		SyncCommand(),
 	}
 
 	handlers := map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate){
 		MilpacCommandName: HandleMilpac,
 		HelloCommandName:  HandleHello,
+		SyncCommandName:   HandleSync,
 	}
 
 	_, err = conn.ApplicationCommandBulkOverwrite(appId, guildId, commands)
@@ -68,7 +71,7 @@ func (b Bot) Start(appId string, guildId string) {
 func AskToConnectDiscord(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	mention := fmt.Sprintf("<@%s>", i.Member.User.ID)
-	kcUrl := "https://auth.7cav.us/auth/realms/7Cav/account/identity"
+	kcUrl := fmt.Sprintf("%s/auth/realms/%s/account/identity", viper.GetString("keycloak.host"), viper.GetString("keycloak.realm"))
 	reply := fmt.Sprintf(`Hey %s, we don't have a valid discord connection for you. Please go to %s and click 'add' to connect your discord account. Then try again!`, mention, kcUrl)
 
 	// this was called because no KC user was found for the given discord ID
