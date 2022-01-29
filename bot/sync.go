@@ -68,6 +68,8 @@ func syncRosterOnCoreDiscord(session *discordgo.Session, user *discordgo.Member,
 
 	if rosterRole, found := cavDiscord.RosterRoleMapping[cavUser.Roster]; !found {
 		return fmt.Errorf("no matching discord role for roster %s", cavUser.Roster)
+	} else if cavUser.Primary.PositionTitle == cavDiscord.RETIRED_POSITION_TITLE {
+		correctRosterRole = cavDiscord.Discord7CavRet
 	} else {
 		correctRosterRole = rosterRole
 	}
