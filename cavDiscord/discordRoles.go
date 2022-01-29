@@ -181,11 +181,9 @@ func GetDiscordRankGroupRole(rank proto.RankType) DiscordRankGroupRole {
 		proto.RankType_RANK_TYPE_CPL:
 		log.Println("returning NCO rank group")
 		return discord7CavNCO
-	default:
-		log.Println("returning no rank group")
-		return ""
 	}
 
+	log.Println("returning no rank group")
 	return ""
 }
 
