@@ -27,8 +27,6 @@ func MilpacCommand() *discordgo.ApplicationCommand {
 func HandleMilpac(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	log.Println("Running milpac cmd")
 
-	log.Println("something else")
-
 	log.Printf("attempt get kc user for %s\n", i.Member.User.ID)
 
 	kcUser, err := keycloak.KCUserViaDiscordID(i.Member.User.ID)
