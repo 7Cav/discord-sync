@@ -3,8 +3,8 @@ package bot
 import (
 	"fmt"
 	"github.com/bwmarrin/discordgo"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"log"
 	"os"
 	"os/signal"
 )
@@ -29,7 +29,7 @@ func (b Bot) Start(appId string, guildId string) {
 	conn := b.conn
 
 	conn.AddHandler(func(s *discordgo.Session, r *discordgo.Ready) {
-		log.Println("Bot is up!")
+		log.Infof("Bot is up!")
 	})
 
 	err := conn.Open()
@@ -51,7 +51,7 @@ func (b Bot) Start(appId string, guildId string) {
 
 	_, err = conn.ApplicationCommandBulkOverwrite(appId, guildId, commands)
 	if err != nil {
-		log.Panicf("Cannot create commands: %v", err)
+		log.Fatalf("Cannot create commands: %v", err)
 	}
 
 	conn.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
@@ -65,7 +65,7 @@ func (b Bot) Start(appId string, guildId string) {
 	stop := make(chan os.Signal)
 	signal.Notify(stop, os.Interrupt)
 	<-stop
-	log.Println("Gracefully shutting down")
+	log.Infof("Gracefully shutting down")
 }
 
 func AskToConnectDiscord(s *discordgo.Session, i *discordgo.InteractionCreate) {

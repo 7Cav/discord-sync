@@ -2,7 +2,7 @@ package bot
 
 import (
 	"github.com/bwmarrin/discordgo"
-	"log"
+	log "github.com/sirupsen/logrus"
 )
 
 var HelloCommandName = "hello"
@@ -15,7 +15,7 @@ func HelloCommand() *discordgo.ApplicationCommand {
 }
 
 func HandleHello(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	log.Println("Running hello cmd")
+	log.Infof("Running hello cmd")
 
 	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
