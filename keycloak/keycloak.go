@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/Nerzal/gocloak/v10"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"log"
 )
 
 type keycloak struct {
@@ -37,7 +37,7 @@ func newKc() *keycloak {
 func (kc keycloak) acquireToken() *gocloak.JWT {
 	token, err := kc.client.LoginClient(kc.ctx, kc.clientId, kc.clientSecret, kc.Realm)
 	if err != nil {
-		log.Fatalf("Something wrong with login: %v", err)
+		log.Errorf("Something wrong with login: %v", err)
 	}
 
 	return token
@@ -52,7 +52,8 @@ func KCUserViaDiscordID(discordID string) (*gocloak.User, error) {
 	})
 
 	if err != nil {
-		log.Printf("error finding users: %v", err)
+
+		log.Errorf("error finding users: %v", err)
 		return nil, err
 	}
 

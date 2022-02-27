@@ -4,7 +4,7 @@ import (
 	"github.com/7cav/discord-sync/cavAPI"
 	"github.com/7cav/discord-sync/keycloak"
 	"github.com/bwmarrin/discordgo"
-	"log"
+	log "github.com/sirupsen/logrus"
 )
 
 var MilpacCommandName = "milpac"
@@ -25,9 +25,8 @@ func MilpacCommand() *discordgo.ApplicationCommand {
 }
 
 func HandleMilpac(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	log.Println("Running milpac cmd")
-
-	log.Printf("attempt get kc user for %s\n", i.Member.User.ID)
+	log.Infof("Running milpac cmd")
+	log.Infof("attempt get kc user for %s\n", i.Member.User.ID)
 
 	kcUser, err := keycloak.KCUserViaDiscordID(i.Member.User.ID)
 

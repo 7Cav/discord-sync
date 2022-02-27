@@ -7,8 +7,8 @@ import (
 	"github.com/7cav/discord-sync/cavDiscord"
 	"github.com/7cav/discord-sync/keycloak"
 	"github.com/bwmarrin/discordgo"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"log"
 )
 
 var SyncCommandName = "sync"
@@ -21,9 +21,9 @@ func SyncCommand() *discordgo.ApplicationCommand {
 }
 
 func HandleSync(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	log.Println("Sync command")
+	log.Infof("Sync command")
 
-	log.Printf("Attempt get kc user for %s\n", i.Member.User.ID)
+	log.Infof("Attempt get kc user for %s\n", i.Member.User.ID)
 
 	kcUser, err := keycloak.KCUserViaDiscordID(i.Member.User.ID)
 
@@ -136,20 +136,20 @@ func syncRankOnCoreDiscord(session *discordgo.Session, user *discordgo.Member, c
 
 		// are they in Officer or NCO groups already
 		if value, found := cavDiscord.DiscordRankGroupMap[cavDiscord.DiscordRankGroupRole(role)]; found {
-			log.Printf("user: %s, found matching rankGroup role: %s, type: %s", user.Nick, role, value)
+			log.Infof("user: %s, found matching rankGroup role: %s, type: %s", user.Nick, role, value)
 			currentRankGroupRole = string(value)
 		}
 
 		// are they in a rank specific group 'SPC' 'CPL' etc
 		if value, found := cavDiscord.RoleRankMapping[cavDiscord.DiscordRankRoleId(role)]; found {
-			log.Printf("user: %s, found matching rank role: %s, rank: %s\n", user.Nick, role, value.String())
+			log.Infof("user: %s, found matching rank role: %s, rank: %s\n", user.Nick, role, value.String())
 			currentRankRole = role
 			currentRank = value
 		}
 	}
 
 	if currentRank == proto.RankType(cavUser.Rank.RankId) {
-		log.Println("User rank already sync'd - skipping rank sync")
+		log.Warnf("User rank already sync'd - skipping rank sync")
 		skipRoleChange = true
 	}
 
@@ -180,28 +180,28 @@ func syncRankOnCoreDiscord(session *discordgo.Session, user *discordgo.Member, c
 		if currentRankRole != "" {
 			err := session.GuildMemberRoleRemove(guildId, user.User.ID, currentRankRole)
 			if err != nil {
-				log.Printf("error removing role, user: %s, rank role: %s, on guild: %s,  %v", user.User.ID, currentRankRole, guildId, err)
+				log.Errorf("error removing role, user: %s, rank role: %s, on guild: %s,  %v", user.User.ID, currentRankRole, guildId, err)
 				return err
 			}
 		}
 
 		err := session.GuildMemberRoleAdd(guildId, user.User.ID, string(rankRoleId))
 		if err != nil {
-			log.Printf("error adding role, user: %s, rank role: %s, on guild: %s,  %v", user.User.Username, string(rankRoleId), guildId, err)
+			log.Errorf("error adding role, user: %s, rank role: %s, on guild: %s,  %v", user.User.Username, string(rankRoleId), guildId, err)
 			return err
 		}
 	}
 
 	newNick := cavDiscord.GenerateCavNickName(cavUser)
 	if newNick == user.Nick {
-		log.Println("User nick already sync'd - skipping nick sync")
+		log.Warnf("User nick already sync'd - skipping nick sync")
 		skipNickChange = true
 	}
 
 	if !skipNickChange {
 		err := session.GuildMemberNickname(guildId, user.User.ID, newNick)
 		if err != nil {
-			log.Printf("error updating user nick, user: %s, nick: %s, on guild: %s,  %v", user.User.Username, newNick, guildId, err)
+			log.Errorf("error updating user nick, user: %s, nick: %s, on guild: %s,  %v", user.User.ID, newNick, guildId, err)
 			return err
 		}
 	}
