@@ -9,33 +9,19 @@ import (
 var emptyRoles []string = nil
 
 func RemoveRoles(session *discordgo.Session, member *discordgo.Member, rolesToRemove []string) {
-	guildId := viper.GetString("discord.guild-id")
-
-	newRoles := intersect(member.Roles, emptyRoles, rolesToRemove)
-
-	err := session.GuildMemberEdit(guildId, member.User.ID, newRoles)
-	if err != nil {
-		log.WithFields(log.Fields{
-			"user_id":  member.User.ID,
-			"username": member.User.Username,
-			"error":    err,
-		}).Errorf("Error removing role from user")
-	}
+	UpdateCavUser(session, &CavUserUpdate{
+		DiscordUser: member,
+		Nickname:    &member.Nick,
+		RemoveRoles: rolesToRemove,
+	})
 }
 
 func AddRoles(session *discordgo.Session, member *discordgo.Member, rolesToAdd []string) {
-	guildId := viper.GetString("discord.guild-id")
-
-	newRoles := intersect(member.Roles, rolesToAdd, emptyRoles)
-
-	err := session.GuildMemberEdit(guildId, member.User.ID, newRoles)
-	if err != nil {
-		log.WithFields(log.Fields{
-			"user_id":  member.User.ID,
-			"username": member.User.Username,
-			"error":    err,
-		}).Errorf("Error adding role to user")
-	}
+	UpdateCavUser(session, &CavUserUpdate{
+		DiscordUser: member,
+		Nickname:    &member.Nick,
+		AddRoles:    rolesToAdd,
+	})
 }
 
 type CavUserUpdate struct {
@@ -48,7 +34,14 @@ type CavUserUpdate struct {
 func UpdateCavUser(session *discordgo.Session, update *CavUserUpdate) {
 	guildId := viper.GetString("discord.guild-id")
 
-	newRoles := intersect(update.DiscordUser.Roles, update.AddRoles, update.RemoveRoles)
+	newRoles, delta := intersect(update.DiscordUser.Roles, update.AddRoles, update.RemoveRoles)
+
+	if delta == 0 {
+		log.WithFields(log.Fields{
+			"nickname": update.DiscordUser.Nick,
+		}).Info("no changes to roles, skipping update")
+		return
+	}
 
 	err := session.GuildMemberEdit(guildId, update.DiscordUser.User.ID, newRoles)
 	if err != nil {
@@ -64,9 +57,10 @@ func UpdateCavUser(session *discordgo.Session, update *CavUserUpdate) {
 // already. I assume that the existing roles will be the longest, so that will be the primary loop. I turn the roles
 // we want to add, and the roles we want to remove, into hashmaps. Then loop over the existing roles and check for both
 // of them
-func intersect(original, toAdd, toRemove []string) []string {
+func intersect(original, toAdd, toRemove []string) ([]string, int) {
 	max := len(original) + len(toAdd) + len(toRemove)
 	res := make([]string, 0, max)
+	delta := 0
 
 	removeMap := make(map[string]struct{}, len(toRemove))
 	for _, el := range toRemove {
@@ -80,15 +74,20 @@ func intersect(original, toAdd, toRemove []string) []string {
 	for i, el := range original {
 
 		if _, found := removeMap[el]; found {
-			continue
+			if _, found := addMap[el]; !found {
+				delta++
+				continue
+			}
 		}
 
+		delta++
 		res = append(res, el)
 
 		if _, found := addMap[el]; !found && i < len(toAdd) {
+			delta++
 			res = append(res, toAdd[i])
 		}
 	}
 
-	return res
+	return res, delta
 }
