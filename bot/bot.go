@@ -2,6 +2,7 @@ package bot
 
 import (
 	"fmt"
+	"github.com/7cav/discord-sync/bot/extensions"
 	"github.com/7cav/discord-sync/cavDiscord"
 	"github.com/bwmarrin/discordgo"
 	log "github.com/sirupsen/logrus"
@@ -101,6 +102,8 @@ func (b Bot) Start(appId string, guildId string) {
 			handler(s, i)
 		}
 	})
+
+	extensions.BootstrapCavDiscordCache(conn)
 
 	defer conn.Close()
 

@@ -68,8 +68,8 @@ func HandleSync(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	rolesToAdd = append(rolesToAdd, rosterRole)
 
 	log.WithFields(log.Fields{
-		"new_roles":      rolesToAdd,
-		"removing_roles": rolesToRemove,
+		"new_roles":      extensions.HumanReadableRoles(rolesToAdd...),
+		"removing_roles": extensions.HumanReadableRoles(rolesToRemove...),
 		"new_nick":       newNick,
 	}).Info("Updating user")
 

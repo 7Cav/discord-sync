@@ -207,10 +207,5 @@ func GenerateCavNickName(cavUser *proto.Profile) string {
 		break
 	}
 
-	// lol
-	if cavUser.User.Username == "Jarvis.A" {
-		return fmt.Sprintf("%s%s.Jarvis", prefix, cavUser.Rank.RankShort)
-	}
-
 	return fmt.Sprintf("%s%s.%s", prefix, cavUser.Rank.RankShort, cavUser.User.Username)
 }

@@ -39,9 +39,13 @@ func UpdateCavUser(session *discordgo.Session, update *CavUserUpdate) {
 	if delta == 0 {
 		log.WithFields(log.Fields{
 			"nickname": update.DiscordUser.Nick,
-		}).Info("no changes to roles, skipping update")
+		}).Debug("no changes to roles, skipping update")
 		return
 	}
+
+	log.WithFields(log.Fields{
+		"role_delta": delta,
+	}).Debug("updating roles due to delta")
 
 	err := session.GuildMemberEdit(guildId, update.DiscordUser.User.ID, newRoles)
 	if err != nil {
@@ -51,6 +55,10 @@ func UpdateCavUser(session *discordgo.Session, update *CavUserUpdate) {
 			"error":    err,
 		}).Errorf("Error updating roles on user")
 	}
+
+	log.WithFields(log.Fields{
+		"nickname": update.DiscordUser.Nick,
+	}).Debug("Updated user roles")
 }
 
 // Figure out what roles we actually need to add to the user,taking into account the pre-existing roles they have
@@ -75,17 +83,22 @@ func intersect(original, toAdd, toRemove []string) ([]string, int) {
 
 		if _, found := removeMap[el]; found {
 			if _, found := addMap[el]; !found {
-				delta++
+				delta--
+				log.Infof("removing: %s", HumanReadableRoles(el))
 				continue
 			}
 		}
 
-		delta++
 		res = append(res, el)
 
-		if _, found := addMap[el]; !found && i < len(toAdd) {
-			delta++
-			res = append(res, toAdd[i])
+		outOfRange := i < len(toAdd)
+		if _, found := addMap[el]; !found && outOfRange {
+			role := toAdd[i]
+			if _, found := removeMap[role]; !found {
+				delta++
+				log.Infof("new: %s", HumanReadableRoles(role))
+				res = append(res, role)
+			}
 		}
 	}
 
