@@ -79,13 +79,13 @@ func intersect(original, toAdd, toRemove []string) []string {
 
 	for i, el := range original {
 
-		if _, ok := removeMap[el]; ok {
+		if _, found := removeMap[el]; found {
 			continue
 		}
 
 		res = append(res, el)
 
-		if _, ok := addMap[el]; !ok && i < len(toAdd) {
+		if _, found := addMap[el]; !found && i < len(toAdd) {
 			res = append(res, toAdd[i])
 		}
 	}
