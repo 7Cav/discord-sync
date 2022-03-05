@@ -1,7 +1,6 @@
 package extensions
 
 import (
-	"fmt"
 	"github.com/bwmarrin/discordgo"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -40,22 +39,22 @@ func AddRoles(session *discordgo.Session, member *discordgo.Member, rolesToAdd [
 }
 
 type CavUserUpdate struct {
-	discordUser *discordgo.Member
-	nickname    *string
-	addRoles    []string
-	removeRoles []string
+	DiscordUser *discordgo.Member
+	Nickname    *string
+	AddRoles    []string
+	RemoveRoles []string
 }
 
 func UpdateCavUser(session *discordgo.Session, update *CavUserUpdate) {
 	guildId := viper.GetString("discord.guild-id")
 
-	newRoles := intersect(update.discordUser.Roles, update.addRoles, update.removeRoles)
+	newRoles := intersect(update.DiscordUser.Roles, update.AddRoles, update.RemoveRoles)
 
-	err := session.GuildMemberEdit(guildId, update.discordUser.User.ID, newRoles)
+	err := session.GuildMemberEdit(guildId, update.DiscordUser.User.ID, newRoles)
 	if err != nil {
 		log.WithFields(log.Fields{
-			"user_id":  update.discordUser.User.ID,
-			"username": update.discordUser.User.Username,
+			"user_id":  update.DiscordUser.User.ID,
+			"username": update.DiscordUser.User.Username,
 			"error":    err,
 		}).Errorf("Error updating roles on user")
 	}
@@ -79,27 +78,17 @@ func intersect(original, toAdd, toRemove []string) []string {
 	}
 
 	for i, el := range original {
-		fmt.Printf("\nNew Size of res array %d", len(res))
-		fmt.Printf("\nChecking item %s", el)
 
 		if _, ok := removeMap[el]; ok {
-			fmt.Printf("\nNeed to remove %s", el)
 			continue
 		}
 
-		fmt.Printf("\nExisting item, keeping %s", el)
 		res = append(res, el)
 
 		if _, ok := addMap[el]; !ok && i < len(toAdd) {
-			fmt.Printf("\nNeed to add %s", toAdd[i])
 			res = append(res, toAdd[i])
 		}
 	}
 
 	return res
 }
-
-// func (session, user, rolesToAdd, rolesToRemove) -> err
-// 1. get current roles for user
-// 2. intersect existing roles from those to add/remove
-// 3. batch update user
