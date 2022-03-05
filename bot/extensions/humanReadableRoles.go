@@ -33,18 +33,25 @@ func BootstrapCavDiscordCache(s *discordgo.Session) {
 
 func HumanReadableRoles(roleIds ...string) string {
 	var res string
+	opened := false
 
 	for _, roleId := range roleIds {
+		var roleName string
 		if _, found := cache[roleId]; !found {
 			log.WithFields(log.Fields{
 				"role_id": roleId,
 			}).Warn("could not find role in cache, refreshing cache")
 			BootstrapCavDiscordCache(session)
-			res += ", " + HumanReadableRoles(roleId)
-			continue
+			roleName = HumanReadableRoles(roleId)
 		}
 
-		res += ", " + cache[roleId].Name
+		roleName = cache[roleId].Name
+
+		if opened {
+			res += ", "
+		}
+		opened = true
+		res += roleName
 	}
 
 	return res
