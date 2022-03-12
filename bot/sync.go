@@ -26,9 +26,9 @@ type cavDcPair struct {
 }
 
 func HandleSync(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	log.Infof("Sync command")
+	log.Debug("Sync command")
 
-	log.Infof("Attempt get kc user for %s\n", i.Member.User.ID)
+	log.Debugf("Attempt get kc user for %s\n", i.Member.User.ID)
 
 	kcUser, err := keycloak.KCUserViaDiscordID(i.Member.User.ID)
 
@@ -65,6 +65,14 @@ func HandleSync(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	// get correct roster role (to add)
 	rosterRole := correctRosterRole(currentUser)
 	rolesToAdd = append(rolesToAdd, rosterRole)
+
+	// get all current 'rank groups' (to remove)
+	rankGroupRoles := currentRankGroupRoles(currentUser)
+	rolesToRemove = append(rolesToRemove, rankGroupRoles...)
+
+	// get correct rank group role (to add)
+	rankGroup := correctRankGroupRole(currentUser)
+	rolesToAdd = append(rolesToAdd, rankGroup)
 
 	log.WithFields(log.Fields{
 		"new_roles":      extensions.HumanReadableRoles(rolesToAdd...),
@@ -154,6 +162,22 @@ func correctRosterRole(pair *cavDcPair) string {
 	}
 
 	return string(cavDiscord.RosterRoleMapping[pair.cavProfile.Roster])
+}
+
+func currentRankGroupRoles(pair *cavDcPair) []string {
+	var res []string
+
+	for _, role := range pair.dcMember.Roles {
+		if _, found := cavDiscord.DiscordRankGroupMap[cavDiscord.DiscordRankGroupRole(role)]; found {
+			res = append(res, role)
+		}
+	}
+
+	return res
+}
+
+func correctRankGroupRole(pair *cavDcPair) string {
+	return string(cavDiscord.GetDiscordRankGroupRole(proto.RankType(pair.cavProfile.Rank.RankId)))
 }
 
 func ErrorWithCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {

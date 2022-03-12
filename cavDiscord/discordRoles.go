@@ -153,7 +153,7 @@ var DiscordRankGroupMap = map[DiscordRankGroupRole]DiscordRankGroupRole{
 }
 
 func GetDiscordRankGroupRole(rank proto.RankType) DiscordRankGroupRole {
-	log.Infof("Getting discord rank group role for rank: %s", rank)
+	log.Debugf("Getting discord rank group role for rank: %s", rank)
 	switch rank {
 	case proto.RankType_RANK_TYPE_GOA,
 		proto.RankType_RANK_TYPE_GEN,
@@ -166,7 +166,7 @@ func GetDiscordRankGroupRole(rank proto.RankType) DiscordRankGroupRole {
 		proto.RankType_RANK_TYPE_CPT,
 		proto.RankType_RANK_TYPE_1LT,
 		proto.RankType_RANK_TYPE_2LT:
-		log.Info("returning officer rank group")
+		log.Debug("returning officer rank group")
 		return discord7CavOfficer
 	case proto.RankType_RANK_TYPE_CW5,
 		proto.RankType_RANK_TYPE_CW4,
@@ -181,11 +181,11 @@ func GetDiscordRankGroupRole(rank proto.RankType) DiscordRankGroupRole {
 		proto.RankType_RANK_TYPE_SSG,
 		proto.RankType_RANK_TYPE_SGT,
 		proto.RankType_RANK_TYPE_CPL:
-		log.Info("returning NCO rank group")
+		log.Debug("returning NCO rank group")
 		return discord7CavNCO
 	}
 
-	log.Info("returning no rank group")
+	log.Debug("returning no rank group")
 	return ""
 }
 

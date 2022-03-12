@@ -30,7 +30,7 @@ func (b Bot) SpecialClearOldUsers(guildId string) {
 	conn := b.conn
 
 	conn.AddHandler(func(s *discordgo.Session, r *discordgo.Ready) {
-		log.Println("Bot is up!")
+		log.Debug("Bot is up!")
 	})
 
 	err := conn.Open()
@@ -72,7 +72,7 @@ func (b Bot) Start(appId string, guildId string) {
 	conn := b.conn
 
 	conn.AddHandler(func(s *discordgo.Session, r *discordgo.Ready) {
-		log.Infof("Bot is up!")
+		log.Debugf("Bot is up!")
 	})
 
 	err := conn.Open()
@@ -110,7 +110,7 @@ func (b Bot) Start(appId string, guildId string) {
 	stop := make(chan os.Signal)
 	signal.Notify(stop, os.Interrupt)
 	<-stop
-	log.Infof("Gracefully shutting down")
+	log.Debugf("Gracefully shutting down")
 }
 
 func AskToConnectDiscord(s *discordgo.Session, i *discordgo.InteractionCreate) {

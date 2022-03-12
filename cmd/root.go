@@ -5,7 +5,7 @@ Copyright © 2022 7Cav.us
 package cmd
 
 import (
-	"fmt"
+	log "github.com/sirupsen/logrus"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -62,6 +62,26 @@ func initConfig() {
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
-		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
+		log.Debugf("Using config file: %s", viper.ConfigFileUsed())
+	}
+
+	level := viper.GetString("logging.level")
+
+	switch level {
+	case "debug":
+		log.SetLevel(log.DebugLevel)
+		break
+	case "info":
+		log.SetLevel(log.InfoLevel)
+		break
+	case "warn":
+		log.SetLevel(log.WarnLevel)
+		break
+	case "error":
+		log.SetLevel(log.ErrorLevel)
+		break
+	default:
+		log.SetLevel(log.DebugLevel)
+		break
 	}
 }

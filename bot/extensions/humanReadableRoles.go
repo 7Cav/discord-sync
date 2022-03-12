@@ -14,7 +14,7 @@ func BootstrapCavDiscordCache(s *discordgo.Session) {
 
 	session = s
 
-	log.Info("bootstrapping discord cache")
+	log.Debug("bootstrapping discord cache")
 
 	// bootstrap cache with roles
 	roles, err := s.GuildRoles(guildId)
